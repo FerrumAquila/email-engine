@@ -1,2 +1,4 @@
 *.pyc
 .idea/
+core/resources/app_settings.py
+local_settings.py
