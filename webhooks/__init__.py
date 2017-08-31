@@ -7,6 +7,9 @@ import json
 import cgi
 from StringIO import StringIO as IO
 
+# Django Imports
+default_app_config = 'webhooks.apps.WebhooksConfig'
+
 
 class BaseWebHook(object):
 
