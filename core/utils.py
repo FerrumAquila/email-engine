@@ -1,6 +1,6 @@
 # App Imports
 import models
-import serialisers
+import contracts
 
 # Package Imports
 import clearbit
@@ -13,43 +13,76 @@ from django.conf import settings
 from django.core.urlresolvers import reverse
 
 
+class PrepEmail(object):
+    def __init__(self, customer_id, _from_email, _to_email, subject, content,
+                 email_args=None, extra_args=None, async=True):
+        self.customer_settings = get_object_or_None(models.CustomerSettings, customer_id=customer_id)
+        self._from_email = _from_email
+        self._to_email = _to_email
+        self.subject = subject
+        self.content = content
+        self._email_args = email_args
+        self._extra_args = extra_args
+        self.async = async
+        self._mail_object = None
+
+    @property
+    def mail(self):
+        content = Content("text/html", self.content)
+        self._mail_object = Mail(self.from_email, self.subject, self.to_email, content)
+        self._set_extra_args()
+        self._set_email_args()
+        return self._mail_object
+
+    @property
+    def from_email(self):
+        if self.customer_settings:
+            _from_email = self.customer_settings.email_from_email or self._from_email
+            _from_name = self.customer_settings.email_from_name or 'Vetted'
+        else:
+            _from_email = self._from_email
+            _from_name = 'Vetted'
+        return Email(_from_email, _from_name)
+
+    @property
+    def to_email(self):
+        if settings.TO_ADMIN_ONLY and 'aetos-force' not in self._to_email:
+            _to_email = settings.EE_ADMIN_EMAIL
+        else:
+            _to_email = self._to_email
+        return Email(_to_email)
+
+    def _set_extra_args(self):
+        if self._extra_args:
+            processed_extra_args = [CustomArg(**extra_arg) for extra_arg in self._extra_args]
+            for processed_extra_arg in processed_extra_args:
+                self._mail_object.add_custom_arg(processed_extra_arg)
+
+    def _set_email_args(self):
+        if self._email_args:
+            print "\nself._email_args"
+            print self._email_args
+            email_params = '--'.join([key + '-' + value for key, value in self._email_args.items()])
+            email_domain = '@parse.thevetted.com'
+            self._mail_object.reply_to = Email(email_params + email_domain, 'No Reply')
+
+
 class EmailHandler(object):
     @classmethod
     def fetch_lite(cls, email_id):
         return clearbit.Person.find(email=email_id)
 
     @classmethod
-    def send_email(cls, customer_id, _from_email, _to_email, subject, content, extra_args=None):
+    def send_email(cls, customer_id, _from_email, _to_email, subject, content,
+                   email_args=None, extra_args=None, async=True):
 
-        customer_settings = get_object_or_None(models.CustomerSettings, customer_id=customer_id)
-
-        if customer_settings:
-            _from_email = customer_settings.email_from_email or _from_email
-            _from_name = customer_settings.email_from_name or 'Vetted'
-        else:
-            _from_email = _from_email
-            _from_name = 'Vetted'
-        from_email = Email(_from_email, _from_name)
-
-        if settings.TO_ADMIN_ONLY and 'aetos-force' not in _to_email:
-            _to_email = settings.EE_ADMIN_EMAIL
-        else:
-            _to_email = _to_email
-        to_email = Email(_to_email)
-
-        content = Content("text/html", content)
-        mail = Mail(from_email, subject, to_email, content)
-        if extra_args:
-            processed_extra_args = [CustomArg(**extra_arg) for extra_arg in extra_args]
-            for processed_extra_arg in processed_extra_args:
-                mail.add_custom_arg(processed_extra_arg)
-            email_params = '--'.join([args['key'] + '-' + args['value'] for args in extra_args])
-            email_domain = '@parse.thevetted.com'
-            mail.reply_to = Email(email_params + email_domain, 'No Reply')
+        mail = PrepEmail(customer_id, _from_email, _to_email, subject, content, email_args, extra_args).mail
 
         if settings.SEND_EMAIL:
             sg = sendgrid.SendGridAPIClient(apikey=settings.EE_INTEGRATION['SENDGRID']['key'])
-            return sg.client.mail.send.post(request_body=mail.get())
+            if async:
+                return 'email sent', sg.client.mail.send.post(request_body=mail.get())
+            return 'email processed', sg.client.mail.send.post(request_body=mail.get())
 
 
 class EmailActivitiesHandler(object):
@@ -124,7 +157,7 @@ class StatusHandler(object):
 class IncomingMailHandler(object):
     @classmethod
     def get_data_json(cls, incoming_mail):
-        return serialisers.ParseIncomingMail(incoming_mail).required_json
+        return contracts.ParseIncomingMail(incoming_mail).required_json
 
     @classmethod
     def email_from_text(cls, incoming_mail):

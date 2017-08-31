@@ -1,7 +1,11 @@
 # App Imports
 import utils
 import models
+import contracts
 from core.resources import responses
+
+# Package Imports
+import json
 
 # Django Imports
 from django.views.decorators.csrf import csrf_exempt
@@ -29,3 +33,13 @@ def email_info(request, email_id):
     person = info.copy()
     person.pop('response')
     return responses.success_response('received', person)
+
+
+@csrf_exempt
+def send_email(request):
+    request_json = json.loads(request.body)
+    email_dict = contracts.SendEmailPostRequest(request_json).required_json
+    print "\nemail_dict"
+    print email_dict
+    m, d = utils.EmailHandler.send_email(**email_dict)
+    return responses.success_response(m, dict())

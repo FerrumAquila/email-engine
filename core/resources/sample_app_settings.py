@@ -2,7 +2,7 @@
 # SETUP SETTINGS #
     **  fill all values
 
-    **  copy 'EE_INTEGRATION' in your settings
+    **  copy this file in your settings
         OR
         rename and remove 'sample_' from this file
         add 'from core.resources.app_settings import *' in project settings.py
@@ -21,3 +21,6 @@ EE_INTEGRATION = {
         'secret': ''
     }
 }
+SEND_EMAIL = None
+TO_ADMIN_ONLY = None
+EE_ADMIN_EMAIL = ''
