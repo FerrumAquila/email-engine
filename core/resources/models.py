@@ -11,6 +11,8 @@ class AetosModel(TimeStampedModel):
 
     class Meta:
         abstract = True
+
+    class Options:
         create_serialiser = None
 
     def serialise(self, data):
@@ -18,4 +20,6 @@ class AetosModel(TimeStampedModel):
 
     @classmethod
     def create_from_webhook(cls, data):
-        return cls(**cls.Meta.create_serialiser(data).required_json).save()
+        obj = cls(**cls.Options.create_serialiser(data).required_json)
+        obj.save()
+        return obj
