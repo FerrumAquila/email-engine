@@ -38,6 +38,8 @@ INSTALLED_APPS = [
     'django.contrib.messages',
     'django.contrib.staticfiles',
 
+    'django_extensions',
+
     'core',
     'webhooks',
 ]
@@ -125,4 +127,4 @@ STATIC_URL = '/static/'
 try:
     from local_settings import *
 except Exception as e:
-    print 'ERROR::&s' % e.message
+    print 'ERROR::%s' % e.message
