@@ -15,14 +15,14 @@ from django.core.urlresolvers import reverse
 
 class PrepEmail(object):
     def __init__(self, customer_id, _from_email, _to_email, subject, content,
-                 email_args=None, extra_args=None, async=True):
+                 email_args=None, custom_args=None, async=True):
         self.customer_settings = get_object_or_None(models.CustomerSettings, customer_id=customer_id)
         self._from_email = _from_email
         self._to_email = _to_email
         self.subject = subject
         self.content = content
         self._email_args = email_args
-        self._extra_args = extra_args
+        self._custom_args = custom_args
         self.async = async
         self._mail_object = None
 
@@ -30,7 +30,7 @@ class PrepEmail(object):
     def mail(self):
         content = Content("text/html", self.content)
         self._mail_object = Mail(self.from_email, self.subject, self.to_email, content)
-        self._set_extra_args()
+        self._set_custom_args()
         self._set_email_args()
         return self._mail_object
 
@@ -52,16 +52,14 @@ class PrepEmail(object):
             _to_email = self._to_email
         return Email(_to_email)
 
-    def _set_extra_args(self):
-        if self._extra_args:
-            processed_extra_args = [CustomArg(**extra_arg) for extra_arg in self._extra_args]
-            for processed_extra_arg in processed_extra_args:
+    def _set_custom_args(self):
+        if self._custom_args:
+            processed_custom_args = [CustomArg(**extra_arg) for extra_arg in self._custom_args]
+            for processed_extra_arg in processed_custom_args:
                 self._mail_object.add_custom_arg(processed_extra_arg)
 
     def _set_email_args(self):
         if self._email_args:
-            print "\nself._email_args"
-            print self._email_args
             email_params = '--'.join([key + '-' + value for key, value in self._email_args.items()])
             email_domain = '@parse.thevetted.com'
             self._mail_object.reply_to = Email(email_params + email_domain, 'No Reply')
@@ -74,9 +72,9 @@ class EmailHandler(object):
 
     @classmethod
     def send_email(cls, customer_id, _from_email, _to_email, subject, content,
-                   email_args=None, extra_args=None, async=True):
+                   email_args=None, custom_args=None, async=True):
 
-        mail = PrepEmail(customer_id, _from_email, _to_email, subject, content, email_args, extra_args).mail
+        mail = PrepEmail(customer_id, _from_email, _to_email, subject, content, email_args, custom_args).mail
 
         if settings.SEND_EMAIL:
             sg = sendgrid.SendGridAPIClient(apikey=settings.EE_INTEGRATION['SENDGRID']['key'])
