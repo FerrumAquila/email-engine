@@ -62,6 +62,8 @@ class PrepEmail(object):
         if self._email_args:
             email_params = '--'.join([key + '-' + value for key, value in self._email_args.items()])
             email_domain = '@parse.thevetted.com'
+            if settings.DEBUG:
+                email_domain = '@parse.thevetted.net'
             self._mail_object.reply_to = Email(email_params + email_domain, 'No Reply')
 
 
