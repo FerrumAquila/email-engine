@@ -39,7 +39,13 @@ def email_info(request, email_id):
 def send_email(request):
     request_json = json.loads(request.body)
     email_dict = contracts.SendEmailPostRequest(request_json).required_json
-    print "\nemail_dict"
-    print email_dict
-    m, d = utils.EmailHandler.send_email(**email_dict)
-    return responses.success_response(m, dict())
+    m, response = utils.EmailHandler.send_email(**email_dict)
+    sg_message_id = response.headers.get('X-Message-Id')
+    for args in email_dict['custom_args']:
+        models.SGMessageIdLink.create_from_webhook({
+            'object_type': args['key'],
+            'object_id': args['value'],
+            'sg_message_id': sg_message_id
+        })
+    d = {'sg_message_id': sg_message_id}
+    return responses.success_response(m, d)
