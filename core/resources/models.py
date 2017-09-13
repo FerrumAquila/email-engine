@@ -19,7 +19,8 @@ class AetosModel(TimeStampedModel):
         pass
 
     @classmethod
-    def create_from_webhook(cls, data):
-        obj = cls(**cls.Options.create_serialiser(data).required_json)
+    def create_from_serialiser(cls, data, serialiser_class=None):
+        serialiser = serialiser_class or cls.Options.create_serialiser
+        obj = cls(**serialiser(data).required_json)
         obj.save()
         return obj

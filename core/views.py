@@ -42,7 +42,7 @@ def send_email(request):
     m, response = utils.EmailHandler.send_email(**email_dict)
     sg_message_id = response.headers.get('X-Message-Id')
     for args in email_dict['custom_args']:
-        models.SGMessageIdLink.create_from_webhook({
+        models.SGMessageIdLink.create_from_request({
             'object_type': args['key'],
             'object_id': args['value'],
             'sg_message_id': sg_message_id

@@ -12,6 +12,10 @@ class SGMessageIdLink(models.AetosModel):
     class Options:
         create_serialiser = serialisers.CreateSGMessageIdLink
 
+    @classmethod
+    def create_from_request(cls, data):
+        return cls.create_from_serialiser(data)
+
 
 class ActivityEvent(models.AetosModel):
     name = models.CharField(max_length=127)
@@ -24,7 +28,11 @@ class ActivityEvent(models.AetosModel):
     category = models.CharField(max_length=127, default='', blank=True, null=True)
 
     class Options:
-        create_serialiser = webhooks.serialisers.CreateActivityEvent
+        webhook_serialiser = webhooks.serialisers.CreateActivityEvent
+
+    @classmethod
+    def create_from_webhook(cls, data):
+        return cls.create_from_serialiser(data, cls.Options.webhook_serialiser)
 
 
 class IncomingMail(models.AetosModel):
@@ -39,7 +47,11 @@ class IncomingMail(models.AetosModel):
     html = models.TextField(null=True)
 
     class Options:
-        create_serialiser = webhooks.serialisers.CreateIncomingMail
+        webhook_serialiser = webhooks.serialisers.CreateIncomingMail
+
+    @classmethod
+    def create_from_webhook(cls, data):
+        return cls.create_from_serialiser(data, cls.Options.webhook_serialiser)
 
 
 class CustomerSettings(models.AetosModel):
