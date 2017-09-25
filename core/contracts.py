@@ -30,6 +30,7 @@ class SendEmailPostRequest(Serializer):
         'email_args': {
             'tenant_id': ('d__custom_args__tenant_id', str),
             'lci_id': ('d__custom_args__lci_id', str),
+            'people_id': ('d__custom_args__people_id', str),
         },
         'async': ('d__async', read_true_false)
     }

@@ -28,7 +28,7 @@ def activities_received(sender, **kwargs):
 
         for email_object_id in unique_email_object_ids:
             status = utils.EmailActivitiesHandler.get_latest_status(email_object_id)
-            email_object_people_id_link = get_object_or_None(models.SGMessageIdLink, sg_message_id=email_object_id)
+            email_object_people_id_link = get_object_or_None(models.SGMessageIdLink, sg_message_id=email_object_id, object_type='people_id')
             if email_object_people_id_link:
                 people_id = email_object_people_id_link.object_id
                 channel = 'tenant_id' + tenant_id + '-email_activities-' + str(people_id)

@@ -13,7 +13,7 @@ from django.views.decorators.csrf import csrf_exempt
 
 @csrf_exempt
 def email_latest_status(request, people_id):
-    people_message_id_link = models.SGMessageIdLink.objects.filter(object_id=people_id, object_type='people')
+    people_message_id_link = models.SGMessageIdLink.objects.filter(object_id=people_id, object_type='people_id')
     if people_message_id_link:
         object_id = people_message_id_link.latest('id').sg_message_id
         status = utils.EmailActivitiesHandler.get_latest_status(object_id)
