@@ -14,7 +14,7 @@ from django.dispatch import receiver
 @receiver(webhooks.signals.webhook_pinged, sender=webhooks.EmailActivities)
 def activities_received(sender, **kwargs):
     mixed_request_datas = kwargs['request_data']
-    print "\n\n\nactivities_received signal received for request_datas"
+    print "\n\n\nSignal Received:\nactivities_received signal received for request_datas"
     print mixed_request_datas
 
     grouped_request_datas = utils.EmailActivitiesHandler.group_by_tenant_id(mixed_request_datas)
@@ -38,7 +38,7 @@ def activities_received(sender, **kwargs):
 @receiver(webhooks.signals.webhook_pinged, sender=webhooks.IncomingMail)
 def redirect_noreply(sender, **kwargs):
     request_data = kwargs['request_data']
-    print "\n\n\nredirect_noreply signal received for request_data"
+    print "\n\n\nSignal Received:\nredirect_noreply signal received for request_data"
     print request_data
 
     incoming_mail = models.IncomingMail.create_from_webhook(request_data)
@@ -47,6 +47,8 @@ def redirect_noreply(sender, **kwargs):
         utils.IncomingMailHandler.open_email_button(incoming_mail),
         utils.IncomingMailHandler.reply_email_help_text(incoming_mail)
     )
+    print "\nnotification_text"
+    print notification_text
     meta_params = utils.IncomingMailHandler.get_params_from_email(incoming_mail)
     tenant_id = meta_params['tenant_id']
     lci_id = meta_params['lci_id']

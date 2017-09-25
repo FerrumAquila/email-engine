@@ -166,7 +166,7 @@ class IncomingMailHandler(object):
     @classmethod
     def open_email_button(cls, incoming_mail):
         return '<span class="open_email_btn" data-email_data="%s">Open email</span>' % reverse(
-            'email_engine:incoming_mail_data', kwargs={'pk': incoming_mail.pk})
+            'core:incoming_mail_data', kwargs={'pk': incoming_mail.pk})
 
     @classmethod
     def reply_email_help_text(cls, incoming_mail):
@@ -175,7 +175,13 @@ class IncomingMailHandler(object):
     @classmethod
     def get_params_from_email(cls, incoming_mail):
         params = dict()
-        for param_string in incoming_mail.mail_to.split('@')[0].split('--'):
+        reply_to_email = ''
+        for email in incoming_mail.mail_to:
+            if '@parse.thevetted' in email:
+                reply_to_email = email
+        if not reply_to_email:
+            return dict()
+        for param_string in reply_to_email.split('@')[0].split('--'):
             key = param_string.split('-')[0]
             value = param_string.split('-')[1]
             params.update({key: value})
